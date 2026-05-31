@@ -37,11 +37,25 @@
       inset: 0;
       background-size: cover;
       background-position: center;
-      transition: background 0.6s ease;
+      transform-origin: center center;
+      transition: background 0.6s ease, transform 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
       z-index: 0;
     }
+    /* Straight (lanes 1-2) */
+    #game.driving       #bg { transform: scale(1.6); }
+    /* Turn left (lane 0) — background rushes right as camera swings left */
+    #game.driving.turn-left  #bg { transform: translateX(14%) scale(1.6) rotate(4deg); }
+    /* Turn right (lane 3) — background rushes left */
+    #game.driving.turn-right #bg { transform: translateX(-14%) scale(1.6) rotate(-4deg); }
 
     /* ─── Lanes Container ───────────────────────────────────────── */
+    #lanes {
+      transform-origin: bottom center;
+      transition: transform 1.5s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    #game.driving.turn-left  #lanes { transform: rotate(4deg); }
+    #game.driving.turn-right #lanes { transform: rotate(-4deg); }
+
     #lanes {
       position: absolute;
       inset: 0;
@@ -109,7 +123,12 @@
       transform: translateX(-50%);
       width: 50%;
       height: auto;
+      transition: transform 0.4s ease;
     }
+    #game.driving            #dashboard img { transform: translateX(-50%) translateY(14px) scale(1.06); transition: transform 1.5s cubic-bezier(0.25,0.46,0.45,0.94); }
+    /* Dashboard tilts into the turn (centrifugal force pushes wheel outward) */
+    #game.driving.turn-left  #dashboard img { transform: translateX(-50%) translateY(14px) scale(1.06) rotate(-5deg); }
+    #game.driving.turn-right #dashboard img { transform: translateX(-50%) translateY(14px) scale(1.06) rotate(5deg); }
 
     /* ─── Lane Content Wrapper ──────────────────────────────────── */
     .lane-inner {
@@ -342,6 +361,51 @@
       white-space: nowrap;
       letter-spacing: 0.05em;
     }
+    /* ─── Drive-Forward Animation ───────────────────────────────── */
+    #game.driving .lane.active .item-img {
+      transform: translateX(-50%) scale(3.2) translateY(-8%);
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45))
+              drop-shadow(0 0 40px rgba(255,220,40,0.9));
+      transition: transform 1.5s cubic-bezier(0.25,0.46,0.45,0.94), filter 1.5s ease;
+    }
+
+    #game.driving .lane:not(.active) .item-img {
+      transform: translateX(-50%) scale(0.05);
+      opacity: 0;
+      transition: transform 1.5s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.6s ease;
+    }
+    #game:not(.driving) .lane:not(.active) .item-img {
+      transition: transform 0.3s ease, filter 0.3s ease, opacity 0.1s ease;
+    }
+
+    #game.driving .lane:not(.active) .lane-word {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    /* All lane dimmers fade out when driving starts, stay out through overlay */
+    #game.driving .lane-dimmer,
+    #game.cleared .lane-dimmer {
+      background: rgba(0,0,0,0) !important;
+      transition: background 0.6s ease;
+    }
+
+    /* ─── Motion Flash Overlay ──────────────────────────────────── */
+    #drive-flash {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%);
+      z-index: 49;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @keyframes driveFlash {
+      0%   { opacity: 0; }
+      30%  { opacity: 0.9; }
+      75%  { opacity: 0.5; }
+      100% { opacity: 0; }
+    }
+    #game.driving #drive-flash { animation: driveFlash 1.5s ease forwards; }
   </style>
 </head>
 <body>
@@ -361,6 +425,9 @@
 
   <!-- Car dashboard (always visible) -->
   <div id="dashboard"><img src="res/car inside look.png" alt=""></div>
+
+  <!-- Drive-forward flash (State 3 transition) -->
+  <div id="drive-flash"></div>
 
   <!-- Interaction overlay (State 3) -->
   <div id="interaction-overlay">
@@ -644,16 +711,23 @@ function handleEnter() {
     state = STATE.INTERACTION;
     inputLocked = true;
 
-    showInteraction(item);
-    speak(item.name);
+    const gameEl = document.getElementById('game');
+    gameEl.classList.add('driving');
+    if (activeLane === 0) gameEl.classList.add('turn-left');
+    else if (activeLane === 3) gameEl.classList.add('turn-right');
 
     setTimeout(() => {
-      hideInteraction();
-      inputLocked = false;
-      state = STATE.CATEGORY;
-      /* No full re-render needed; just ensure highlight is correct */
-      refreshLaneHighlight();
-    }, 3000);
+      gameEl.classList.remove('driving', 'turn-left', 'turn-right');
+      showInteraction(item);
+      speak(item.name);
+
+      setTimeout(() => {
+        hideInteraction();
+        inputLocked = false;
+        state = STATE.CATEGORY;
+        refreshLaneHighlight();
+      }, 3000);
+    }, 1500);
   }
 }
 
