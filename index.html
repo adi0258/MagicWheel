@@ -10,12 +10,15 @@
     /* ─── Reset & Base ─────────────────────────────────────────── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      width: 100vw;
-      height: 100vh;
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      font-family: 'Varela Round', 'Arial Rounded MT Bold', Arial, sans-serif;
       background: #0d0d1a;
+    }
+
+    body {
+      font-family: 'Varela Round', 'Arial Rounded MT Bold', Arial, sans-serif;
       user-select: none;
     }
 
@@ -25,6 +28,7 @@
       width: 100vw;
       height: 100vh;
       overflow: hidden;
+      background: #0d0d1a;
     }
 
     /* ─── Background Layer ──────────────────────────────────────── */
@@ -81,19 +85,29 @@
       50%       { opacity: 1; }
     }
 
-    /* ─── Steering Wheel Indicator ──────────────────────────────── */
-    .wheel-indicator {
+    /* ─── Car Dashboard Overlay ─────────────────────────────────── */
+    #dashboard {
       position: absolute;
-      bottom: 18px;
-      left: 50%;
-      transform: translateX(-50%) scale(0.7);
-      opacity: 0;
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 32vh;
+      overflow: hidden;
+      z-index: 15;
+      pointer-events: none;
+      /* mask applied to the div so coordinates align with the visible area,
+         fading the white windshield at top to transparent, car interior below */
+      background: transparent;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
     }
 
-    .lane.active .wheel-indicator {
-      opacity: 1;
-      transform: translateX(-50%) scale(1);
+    #dashboard img {
+      display: block;
+      width: 100%;
+      margin-top: -46%;  /* push the white top portion above the container */
+      position: relative;
+      z-index: 1;
     }
 
     /* ─── Lane Content Wrapper ──────────────────────────────────── */
@@ -104,7 +118,6 @@
       justify-content: center;
       width: 100%;
       height: 100%;
-      padding-bottom: 90px; /* room for wheel indicator */
     }
 
     /* ─── Menu: World Card ──────────────────────────────────────── */
@@ -164,6 +177,28 @@
       pointer-events: none;
     }
 
+    /* ─── Category: Item Image ──────────────────────────────────── */
+    .item-img {
+      position: absolute;
+      bottom: 28vh;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 75%;
+      max-height: 38vh;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
+      transition: transform 0.3s ease, filter 0.3s ease;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .lane.active .item-img {
+      transform: translateX(-50%) scale(1.12);
+      filter:
+        drop-shadow(0 6px 14px rgba(0,0,0,0.45))
+        drop-shadow(0 0 22px rgba(255, 220, 40, 0.6));
+    }
+
     /* ─── Category: Lane Dimmer (spotlight effect) ──────────────── */
     .lane-dimmer {
       position: absolute;
@@ -181,7 +216,7 @@
     /* ─── Category: Word Label on active lane ───────────────────── */
     .lane-word {
       position: absolute;
-      bottom: 90px;
+      bottom: 33vh;
       left: 50%;
       transform: translateX(-50%);
       font-size: clamp(1.4rem, 2.8vw, 2.4rem);
@@ -317,48 +352,14 @@
 
   <!-- 4 Lanes -->
   <div id="lanes">
-    <div class="lane" id="lane-0">
-      <div class="lane-inner" id="lane-inner-0"></div>
-      <!-- Steering wheel indicator SVG -->
-      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
-        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
-        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="lane" id="lane-1">
-      <div class="lane-inner" id="lane-inner-1"></div>
-      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
-        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
-        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="lane" id="lane-2">
-      <div class="lane-inner" id="lane-inner-2"></div>
-      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
-        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
-        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="lane" id="lane-3">
-      <div class="lane-inner" id="lane-inner-3"></div>
-      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
-        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
-        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
-      </svg>
-    </div>
+    <div class="lane" id="lane-0"><div class="lane-inner" id="lane-inner-0"></div></div>
+    <div class="lane" id="lane-1"><div class="lane-inner" id="lane-inner-1"></div></div>
+    <div class="lane" id="lane-2"><div class="lane-inner" id="lane-inner-2"></div></div>
+    <div class="lane" id="lane-3"><div class="lane-inner" id="lane-inner-3"></div></div>
   </div>
+
+  <!-- Car dashboard (always visible) -->
+  <div id="dashboard"><img src="res/car inside look.png" alt=""></div>
 
   <!-- Interaction overlay (State 3) -->
   <div id="interaction-overlay">
@@ -398,17 +399,17 @@ const CONFIG = {
       id: 'home',
       name: 'בית',
 
-      menuImage: 'res/home.png',
+      menuImage: 'res/home/home.png',
       menuGradient: 'linear-gradient(145deg, #f7971e 0%, #ffd200 50%, #d0021b 100%)',
       menuEmoji: '🏠',
 
-      categoryBackground: 'res/home.png',
+      categoryBackground: 'res/home/home.png',
 
       items: [
-        { id: 'bed',      name: 'מיטה'  },
-        { id: 'computer', name: 'מחשב'  },
-        { id: 'sofa',     name: 'ספה'   },
-        { id: 'shelf',    name: 'מדף'   },
+        { id: 'bed',       name: 'מיטה',  image: 'res/home/bed.png'       },
+        { id: 'computer',  name: 'מחשב',  image: 'res/home/computer.png'  },
+        { id: 'sofa',      name: 'ספה',   image: 'res/home/sofa.png'      },
+        { id: 'bookshelf', name: 'מדף',   image: 'res/home/bookshelf.png' },
       ],
     },
 
@@ -417,17 +418,17 @@ const CONFIG = {
       id: 'street',
       name: 'רחוב',
 
-      menuImage: 'res/street.png',
+      menuImage: 'res/street/street.png',
       menuGradient: 'linear-gradient(145deg, #4a90e2 0%, #74b9ff 50%, #2d3436 100%)',
       menuEmoji: '🏙️',
 
-      categoryBackground: 'res/street.png',
+      categoryBackground: 'res/street/street.png',
 
       items: [
-        { id: 'tree',          name: 'עץ'    },
-        { id: 'bench',         name: 'ספסל'  },
-        { id: 'traffic_light', name: 'רמזור' },
-        { id: 'shop',          name: 'חנות'  },
+        { id: 'bench',        name: 'ספסל',     image: 'res/street/bench.png'       },
+        { id: 'trafficlight', name: 'רמזור',    image: 'res/street/trafficlight.png'},
+        { id: 'school',       name: 'בית ספר',  image: 'res/street/school.png'      },
+        { id: 'shop',         name: 'חנות',     image: 'res/street/shop.png'        },
       ],
     },
 
@@ -436,17 +437,17 @@ const CONFIG = {
       id: 'beach',
       name: 'חוף הים',
 
-      menuImage: 'res/beach.png',
+      menuImage: 'res/beach/beach.png',
       menuGradient: 'linear-gradient(145deg, #00cec9 0%, #74b9ff 40%, #fdcb6e 100%)',
       menuEmoji: '🏖️',
 
-      categoryBackground: 'res/beach.png',
+      categoryBackground: 'res/beach/beach.png',
 
       items: [
-        { id: 'ball',     name: 'כדור'         },
-        { id: 'shell',    name: 'צדף'          },
-        { id: 'lifebuoy', name: 'טבעת הצלה'   },
-        { id: 'icecream', name: 'גלידה'        },
+        { id: 'ball',     name: 'כדור',       image: 'res/beach/ball.png'     },
+        { id: 'seashell', name: 'צדף',        image: 'res/beach/seashell.png' },
+        { id: 'lifering', name: 'טבעת הצלה', image: 'res/beach/lifering.png' },
+        { id: 'icecream', name: 'גלידה',      image: 'res/beach/icecream.png' },
       ],
     },
 
@@ -455,17 +456,17 @@ const CONFIG = {
       id: 'forest',
       name: 'יער',
 
-      menuImage: 'res/forest.png',
+      menuImage: 'res/forest/forest.png',
       menuGradient: 'linear-gradient(145deg, #134e5e 0%, #71b280 60%, #27ae60 100%)',
       menuEmoji: '🌲',
 
-      categoryBackground: 'res/forest.png',
+      categoryBackground: 'res/forest/forest.png',
 
       items: [
-        { id: 'mushroom', name: 'פטרייה' },
-        { id: 'bear',     name: 'דוב'    },
-        { id: 'tent',     name: 'אוהל'   },
-        { id: 'campfire', name: 'מדורה'  },
+        { id: 'mushroom', name: 'פטרייה', image: 'res/forest/mushroom.png' },
+        { id: 'bear',     name: 'דוב',    image: 'res/forest/bear.png'     },
+        { id: 'tent',     name: 'אוהל',   image: 'res/forest/tent.png'     },
+        { id: 'bonfire',  name: 'מדורה',  image: 'res/forest/bonfire.png'  },
       ],
     },
   ],
@@ -551,6 +552,7 @@ function renderCategory(world) {
     innerEls[i].innerHTML = `
       ${backHint}
       <div class="lane-dimmer"></div>
+      <img class="item-img" src="${item.image}" alt="${item.name}">
       <div class="lane-word">${item.name}</div>
     `;
   });
