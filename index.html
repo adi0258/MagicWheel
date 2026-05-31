@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>הגה ההרפתקאות</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Varela Round', 'Arial Rounded MT Bold', Arial, sans-serif;
+      background: #0d0d1a;
+      user-select: none;
+    }
+
+    /* ─── Game Container ────────────────────────────────────────── */
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ─── Background Layer ──────────────────────────────────────── */
+    #bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      transition: background 0.6s ease;
+      z-index: 0;
+    }
+
+    /* ─── Lanes Container ───────────────────────────────────────── */
+    #lanes {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: row; /* left = lane 0, right = lane 3 */
+      z-index: 1;
+    }
+
+    /* ─── Individual Lane ───────────────────────────────────────── */
+    .lane {
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.25s ease;
+    }
+
+    /* Active lane: golden glow border */
+    .lane::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 3px solid transparent;
+      border-radius: 16px;
+      pointer-events: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .lane.active::after {
+      border-color: rgba(255, 220, 40, 0.85);
+      box-shadow:
+        inset 0 0 40px rgba(255, 220, 40, 0.12),
+        0 0 24px rgba(255, 220, 40, 0.35);
+      animation: lanePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes lanePulse {
+      0%, 100% { opacity: 0.75; }
+      50%       { opacity: 1; }
+    }
+
+    /* ─── Steering Wheel Indicator ──────────────────────────────── */
+    .wheel-indicator {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.7);
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .lane.active .wheel-indicator {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* ─── Lane Content Wrapper ──────────────────────────────────── */
+    .lane-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding-bottom: 90px; /* room for wheel indicator */
+    }
+
+    /* ─── Menu: World Card ──────────────────────────────────────── */
+    .world-card {
+      width: 82%;
+      aspect-ratio: 3/4;
+      max-height: 68vh;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .lane.active .world-card {
+      transform: translateY(-6px) scale(1.04);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.65), 0 0 30px rgba(255, 220, 40, 0.25);
+    }
+
+    .world-card .card-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .world-card .card-emoji {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(4rem, 8vw, 8rem);
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+
+    .world-card .card-name {
+      position: relative;
+      z-index: 1;
+      font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+      color: #fff;
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* Card overlay gradient so text is always readable */
+    .world-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.55) 100%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── Category: Item Card ───────────────────────────────────── */
+    .item-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: absolute;
+      bottom: 100px;
+      width: 88%;
+      transition: transform 0.3s ease;
+    }
+
+    .lane.active .item-wrap {
+      transform: translateY(-8px) scale(1.08);
+    }
+
+    .item-emoji-box {
+      border-radius: 28px;
+      width: clamp(90px, 13vw, 170px);
+      height: clamp(90px, 13vw, 170px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+      transition: filter 0.3s ease;
+    }
+
+    .lane.active .item-emoji-box {
+      filter:
+        drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45))
+        drop-shadow(0 0 18px rgba(255, 220, 40, 0.55));
+    }
+
+    .item-img {
+      width: 88%;
+      max-height: 46vh;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+      transition: filter 0.3s ease, transform 0.3s ease;
+    }
+
+    .lane.active .item-img {
+      filter:
+        drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5))
+        drop-shadow(0 0 20px rgba(255, 220, 40, 0.5));
+    }
+
+    .item-label {
+      margin-top: 10px;
+      font-size: clamp(1rem, 2.2vw, 1.7rem);
+      color: #fff;
+      font-weight: bold;
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.95);
+      background: rgba(0, 0, 0, 0.45);
+      padding: 5px 16px;
+      border-radius: 30px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ─── Back Arrow hint (State 2, lane 0 only) ────────────────── */
+    .back-hint {
+      position: absolute;
+      top: 50%;
+      left: 14px;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.55);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .back-hint span { font-size: 0.7rem; letter-spacing: 0.05em; }
+
+    /* ─── Menu Header ───────────────────────────────────────────── */
+    #menu-title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 18px 0 12px;
+      font-size: clamp(1.4rem, 3vw, 2.5rem);
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.7);
+      z-index: 5;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, transparent 100%);
+      letter-spacing: 2px;
+    }
+
+    /* ─── Interaction Overlay ───────────────────────────────────── */
+    #interaction-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    #interaction-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #interaction-item-preview {
+      font-size: clamp(8rem, 22vw, 20rem);
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.5));
+      animation: itemBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      line-height: 1;
+    }
+
+    #interaction-item-img {
+      max-width: 35vw;
+      max-height: 38vh;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 20px rgba(0,0,0,0.5));
+      animation: itemBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes itemBounce {
+      0%   { transform: scale(0.4); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    #word-display {
+      margin-top: 24px;
+      font-size: clamp(4rem, 14vw, 11rem);
+      color: #FFE220;
+      text-shadow:
+        3px 3px 0 #b87900,
+        0 0 50px rgba(255, 226, 32, 0.7);
+      animation: wordPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.15s both;
+      letter-spacing: 4px;
+    }
+
+    @keyframes wordPop {
+      0%   { transform: scale(0.2) rotate(-8deg); opacity: 0; }
+      80%  { transform: scale(1.08) rotate(1deg); }
+      100% { transform: scale(1)    rotate(0deg); opacity: 1; }
+    }
+
+    /* ─── Nav hint ──────────────────────────────────────────────── */
+    #nav-hint {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255, 255, 255, 0.45);
+      font-size: clamp(0.65rem, 1.2vw, 0.9rem);
+      z-index: 10;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+<div id="game">
+  <div id="bg"></div>
+
+  <!-- Menu title (shown only in MENU state) -->
+  <div id="menu-title">🚗 &nbsp; בחר עולם &nbsp; 🚗</div>
+
+  <!-- 4 Lanes -->
+  <div id="lanes">
+    <div class="lane" id="lane-0">
+      <div class="lane-inner" id="lane-inner-0"></div>
+      <!-- Steering wheel indicator SVG -->
+      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
+        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
+        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="lane" id="lane-1">
+      <div class="lane-inner" id="lane-inner-1"></div>
+      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
+        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
+        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="lane" id="lane-2">
+      <div class="lane-inner" id="lane-inner-2"></div>
+      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
+        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
+        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="lane" id="lane-3">
+      <div class="lane-inner" id="lane-inner-3"></div>
+      <svg class="wheel-indicator" width="56" height="56" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="30" cy="30" r="27" fill="rgba(0,0,0,0.4)" stroke="#FFE220" stroke-width="4"/>
+        <circle cx="30" cy="30" r="9"  fill="none"            stroke="#FFE220" stroke-width="3.5"/>
+        <line x1="30" y1="21" x2="30" y2="3"   stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="22" y1="25" x2="5"  y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+        <line x1="38" y1="25" x2="55" y2="15"  stroke="#FFE220" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Interaction overlay (State 3) -->
+  <div id="interaction-overlay">
+    <div id="interaction-item-preview"></div>
+    <img id="interaction-item-img" src="" alt="" style="display:none;">
+    <div id="word-display"></div>
+  </div>
+
+  <!-- Keyboard hint at the bottom -->
+  <div id="nav-hint">← → לניווט &nbsp;|&nbsp; Enter לבחירה &nbsp;|&nbsp; ← מהשורה הראשונה לחזרה לתפריט</div>
+</div>
+
+<script>
+/* ================================================================
+   GAME DATA CONFIGURATION
+   ─────────────────────────────────────────────────────────────────
+   To swap in your own images, fill in the string paths below.
+
+   Background images:
+     menuBackground          – shown behind the 4 world cards
+     worlds[n].categoryBackground – full-screen scene for that world
+
+   Item images:
+     worlds[n].items[m].image – transparent PNG of the object
+                                 Leave as '' to use the emoji fallback.
+
+   Menu card images:
+     worlds[n].menuImage – illustration for the card face.
+                            Leave as '' to use the emoji + gradient fallback.
+================================================================ */
+const CONFIG = {
+
+  /* Background during main menu (leave '' for the built-in night-sky gradient) */
+  menuBackground: '',
+
+  worlds: [
+    /* ── 0: Home ──────────────────────────────────────────────── */
+    {
+      id: 'home',
+      name: 'בית',
+
+      menuImage: '',                          // e.g. 'assets/menu/home_card.jpg'
+      menuGradient: 'linear-gradient(145deg, #f7971e 0%, #ffd200 50%, #d0021b 100%)',
+      menuEmoji: '🏠',
+
+      categoryBackground: '',                 // e.g. 'assets/worlds/home_interior.jpg'
+      categoryGradient: 'linear-gradient(180deg, #fdebd0 0%, #f5cba7 60%, #e59866 100%)',
+
+      items: [
+        { id: 'bed',      name: 'מיטה',    image: '', emoji: '🛏️', color: '#e8b4b8' },
+        { id: 'computer', name: 'מחשב',    image: '', emoji: '💻', color: '#a8d8ea' },
+        { id: 'chair',    name: 'כיסא',    image: '', emoji: '🪑', color: '#b8e6b8' },
+        { id: 'table',    name: 'שולחן',   image: '', emoji: '🪞', color: '#f0d9a8' },
+      ],
+    },
+
+    /* ── 1: Street ────────────────────────────────────────────── */
+    {
+      id: 'street',
+      name: 'רחוב',
+
+      menuImage: '',
+      menuGradient: 'linear-gradient(145deg, #4a90e2 0%, #74b9ff 50%, #2d3436 100%)',
+      menuEmoji: '🏙️',
+
+      categoryBackground: '',
+      categoryGradient: 'linear-gradient(180deg, #74b9ff 0%, #a29bfe 40%, #636e72 100%)',
+
+      items: [
+        { id: 'car',           name: 'מכונית',   image: '', emoji: '🚗', color: '#ff7675' },
+        { id: 'traffic_light', name: 'רמזור',    image: '', emoji: '🚦', color: '#fdcb6e' },
+        { id: 'bus',           name: 'אוטובוס',  image: '', emoji: '🚌', color: '#55efc4' },
+        { id: 'bicycle',       name: 'אופניים',  image: '', emoji: '🚲', color: '#74b9ff' },
+      ],
+    },
+
+    /* ── 2: Beach ─────────────────────────────────────────────── */
+    {
+      id: 'beach',
+      name: 'חוף הים',
+
+      menuImage: '',
+      menuGradient: 'linear-gradient(145deg, #00cec9 0%, #74b9ff 40%, #fdcb6e 100%)',
+      menuEmoji: '🏖️',
+
+      categoryBackground: '',
+      categoryGradient: 'linear-gradient(180deg, #0099cc 0%, #00b4d8 45%, #f7db68 100%)',
+
+      items: [
+        { id: 'fish',  name: 'דג',   image: '', emoji: '🐟', color: '#74d7d7' },
+        { id: 'shell', name: 'צדף',  image: '', emoji: '🐚', color: '#ffd166' },
+        { id: 'sun',   name: 'שמש',  image: '', emoji: '☀️', color: '#ffbe0b' },
+        { id: 'boat',  name: 'סירה', image: '', emoji: '⛵', color: '#dfe6e9' },
+      ],
+    },
+
+    /* ── 3: Forest ────────────────────────────────────────────── */
+    {
+      id: 'forest',
+      name: 'יער',
+
+      menuImage: '',
+      menuGradient: 'linear-gradient(145deg, #134e5e 0%, #71b280 60%, #27ae60 100%)',
+      menuEmoji: '🌲',
+
+      categoryBackground: '',
+      categoryGradient: 'linear-gradient(180deg, #1e3c00 0%, #1a4731 40%, #52b788 100%)',
+
+      items: [
+        { id: 'tree',     name: 'עץ',      image: '', emoji: '🌳', color: '#52b788' },
+        { id: 'bird',     name: 'ציפור',   image: '', emoji: '🐦', color: '#b7e4c7' },
+        { id: 'flower',   name: 'פרח',     image: '', emoji: '🌸', color: '#ffc8dd' },
+        { id: 'mushroom', name: 'פטרייה',  image: '', emoji: '🍄', color: '#ffb347' },
+      ],
+    },
+  ],
+};
+
+/* ================================================================
+   STATE MACHINE
+================================================================ */
+const STATE = { MENU: 'MENU', CATEGORY: 'CATEGORY', INTERACTION: 'INTERACTION' };
+
+let state        = STATE.MENU;
+let activeLane   = 0;
+let activeWorld  = null;
+let inputLocked  = false;
+
+/* ── DOM refs ─────────────────────────────────────────────────── */
+const bgEl              = document.getElementById('bg');
+const menuTitleEl       = document.getElementById('menu-title');
+const navHintEl         = document.getElementById('nav-hint');
+const overlayEl         = document.getElementById('interaction-overlay');
+const overlayPreviewEl  = document.getElementById('interaction-item-preview');
+const overlayImgEl      = document.getElementById('interaction-item-img');
+const wordDisplayEl     = document.getElementById('word-display');
+
+const laneEls = [0, 1, 2, 3].map(i => document.getElementById(`lane-${i}`));
+const innerEls = [0, 1, 2, 3].map(i => document.getElementById(`lane-inner-${i}`));
+
+/* ================================================================
+   BACKGROUND HELPER
+================================================================ */
+function applyBackground(world) {
+  if (!world) {
+    /* Menu state */
+    if (CONFIG.menuBackground) {
+      bgEl.style.backgroundImage = `url('${CONFIG.menuBackground}')`;
+      bgEl.style.background = '';
+    } else {
+      bgEl.style.backgroundImage = 'none';
+      bgEl.style.background =
+        'linear-gradient(180deg, #0d0d1a 0%, #1a1a3e 40%, #0f3460 100%)';
+    }
+  } else {
+    if (world.categoryBackground) {
+      bgEl.style.backgroundImage = `url('${world.categoryBackground}')`;
+      bgEl.style.background = '';
+    } else {
+      bgEl.style.backgroundImage = 'none';
+      bgEl.style.background = world.categoryGradient;
+    }
+  }
+}
+
+/* ================================================================
+   LANE HIGHLIGHT
+================================================================ */
+function refreshLaneHighlight() {
+  laneEls.forEach((el, i) => el.classList.toggle('active', i === activeLane));
+}
+
+/* ================================================================
+   RENDER: STATE 1 – MAIN MENU
+================================================================ */
+function renderMenu() {
+  menuTitleEl.style.display = 'block';
+  applyBackground(null);
+
+  CONFIG.worlds.forEach((world, i) => {
+    let faceHTML;
+    if (world.menuImage) {
+      faceHTML = `<div class="card-img" style="background-image:url('${world.menuImage}')"></div>`;
+    } else {
+      faceHTML = `<div class="card-emoji">${world.menuEmoji}</div>`;
+    }
+
+    innerEls[i].innerHTML = `
+      <div class="world-card" style="background: ${world.menuGradient};">
+        ${faceHTML}
+        <div class="card-name">${world.name}</div>
+      </div>
+    `;
+  });
+
+  refreshLaneHighlight();
+}
+
+/* ================================================================
+   RENDER: STATE 2 – CATEGORY VIEW
+================================================================ */
+function renderCategory(world) {
+  menuTitleEl.style.display = 'none';
+  applyBackground(world);
+
+  world.items.forEach((item, i) => {
+    let mediaHTML;
+    if (item.image) {
+      mediaHTML = `<img class="item-img" src="${item.image}" alt="${item.name}">`;
+    } else {
+      mediaHTML = `<div class="item-emoji-box" style="background:${item.color};">${item.emoji}</div>`;
+    }
+
+    /* Show ← back hint only on lane 0 */
+    const backHint = (i === 0)
+      ? `<div class="back-hint" style="display:flex;">← <span>תפריט</span></div>`
+      : '';
+
+    innerEls[i].innerHTML = `
+      ${backHint}
+      <div class="item-wrap">
+        ${mediaHTML}
+        <div class="item-label">${item.name}</div>
+      </div>
+    `;
+  });
+
+  refreshLaneHighlight();
+}
+
+/* ================================================================
+   RENDER: STATE 3 – INTERACTION
+================================================================ */
+function showInteraction(item) {
+  /* Reset animation by cloning nodes */
+  function reAnimate(el) {
+    const clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
+    return clone;
+  }
+
+  if (item.image) {
+    overlayImgEl.src = item.image;
+    overlayImgEl.alt = item.name;
+    overlayImgEl.style.display = 'block';
+    overlayPreviewEl.textContent = '';
+    reAnimate(overlayImgEl);
+  } else {
+    overlayPreviewEl.textContent = item.emoji;
+    overlayImgEl.style.display = 'none';
+    reAnimate(overlayPreviewEl);
+  }
+
+  /* Animate word */
+  const newWord = wordDisplayEl.cloneNode(false);
+  newWord.textContent = item.name;
+  wordDisplayEl.parentNode.replaceChild(newWord, wordDisplayEl);
+
+  overlayEl.classList.add('visible');
+}
+
+function hideInteraction() {
+  overlayEl.classList.remove('visible');
+}
+
+/* ================================================================
+   TEXT-TO-SPEECH
+================================================================ */
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang    = 'he-IL';
+  utter.rate    = 0.82;
+  utter.pitch   = 1.15;
+  utter.volume  = 1;
+  speechSynthesis.speak(utter);
+}
+
+/* ================================================================
+   INPUT
+================================================================ */
+document.addEventListener('keydown', e => {
+  if (inputLocked) return;
+
+  switch (e.key) {
+    case 'ArrowLeft':
+      e.preventDefault();
+      handleLeft();
+      break;
+    case 'ArrowRight':
+      e.preventDefault();
+      handleRight();
+      break;
+    case 'Enter':
+      e.preventDefault();
+      handleEnter();
+      break;
+  }
+});
+
+function handleLeft() {
+  if (activeLane > 0) {
+    activeLane--;
+    refreshLaneHighlight();
+  } else if (state === STATE.CATEGORY) {
+    /* Leftmost lane + left arrow = back to menu */
+    goToMenu();
+  }
+}
+
+function handleRight() {
+  if (activeLane < 3) {
+    activeLane++;
+    refreshLaneHighlight();
+  }
+}
+
+function handleEnter() {
+  if (state === STATE.MENU) {
+    activeWorld = CONFIG.worlds[activeLane];
+    state = STATE.CATEGORY;
+    activeLane = 0;
+    renderCategory(activeWorld);
+
+  } else if (state === STATE.CATEGORY) {
+    const item = activeWorld.items[activeLane];
+    state = STATE.INTERACTION;
+    inputLocked = true;
+
+    showInteraction(item);
+    speak(item.name);
+
+    setTimeout(() => {
+      hideInteraction();
+      inputLocked = false;
+      state = STATE.CATEGORY;
+      /* No full re-render needed; just ensure highlight is correct */
+      refreshLaneHighlight();
+    }, 3000);
+  }
+}
+
+function goToMenu() {
+  activeWorld = null;
+  state = STATE.MENU;
+  activeLane = 0;
+  renderMenu();
+}
+
+/* ================================================================
+   BOOT
+================================================================ */
+(function init() {
+  renderMenu();
+})();
+</script>
+</body>
+</html>
