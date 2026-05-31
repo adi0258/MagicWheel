@@ -413,7 +413,7 @@
   <div id="bg"></div>
 
   <!-- Menu title (shown only in MENU state) -->
-  <div id="menu-title">🚗 &nbsp; בחר עולם &nbsp; 🚗</div>
+  <div id="menu-title">🚗 &nbsp; בחר עולם-اختر عالماً &nbsp; 🚗</div>
 
   <!-- 4 Lanes -->
   <div id="lanes">
@@ -465,7 +465,7 @@ const CONFIG = {
     /* ── 0: Home ──────────────────────────────────────────────── */
     {
       id: 'home',
-      name: 'בית',
+      name: 'בַּיִת-منزل',
 
       menuImage: 'res/home/home.png',
       menuGradient: 'linear-gradient(145deg, #f7971e 0%, #ffd200 50%, #d0021b 100%)',
@@ -474,17 +474,17 @@ const CONFIG = {
       categoryBackground: 'res/home/home.png',
 
       items: [
-        { id: 'bed',       name: 'מיטה',  image: 'res/home/bed.png'       },
-        { id: 'computer',  name: 'מחשב',  image: 'res/home/computer.png'  },
-        { id: 'sofa',      name: 'ספה',   image: 'res/home/sofa.png'      },
-        { id: 'bookshelf', name: 'מדף',   image: 'res/home/bookshelf.png' },
+        { id: 'bed',       name: 'מִטָּה-سرير',  image: 'res/home/bed.png'       },
+        { id: 'computer',  name: 'מַחְשֵׁב-حاسوب',  image: 'res/home/computer.png'  },
+        { id: 'sofa',      name: 'סַפָּה-أريكة',   image: 'res/home/sofa.png'      },
+        { id: 'bookshelf', name: 'מַדָּף-رف',   image: 'res/home/bookshelf.png' },
       ],
     },
 
     /* ── 1: Street ────────────────────────────────────────────── */
     {
       id: 'street',
-      name: 'רחוב',
+      name: 'רְחוֹב-شارع',
 
       menuImage: 'res/street/street.png',
       menuGradient: 'linear-gradient(145deg, #4a90e2 0%, #74b9ff 50%, #2d3436 100%)',
@@ -493,17 +493,17 @@ const CONFIG = {
       categoryBackground: 'res/street/street.png',
 
       items: [
-        { id: 'bench',        name: 'ספסל',     image: 'res/street/bench.png'       },
-        { id: 'trafficlight', name: 'רמזור',    image: 'res/street/trafficlight.png'},
-        { id: 'school',       name: 'בית ספר',  image: 'res/street/school.png'      },
-        { id: 'shop',         name: 'חנות',     image: 'res/street/shop.png'        },
+        { id: 'bench',        name: 'סַפְסָל-مقعد',     image: 'res/street/bench.png'       },
+        { id: 'trafficlight', name: 'רַמְזוֹר-إشارات المرور',    image: 'res/street/trafficlight.png'},
+        { id: 'school',       name: 'בֵּית סֵפֶר-مدرسة',  image: 'res/street/school.png'      },
+        { id: 'shop',         name: 'חֲנוּת-محل',     image: 'res/street/shop.png'        },
       ],
     },
 
     /* ── 2: Beach ─────────────────────────────────────────────── */
     {
       id: 'beach',
-      name: 'חוף הים',
+      name: 'חוֹף הַיָּם-شاطئ البحر',
 
       menuImage: 'res/beach/beach.png',
       menuGradient: 'linear-gradient(145deg, #00cec9 0%, #74b9ff 40%, #fdcb6e 100%)',
@@ -512,17 +512,17 @@ const CONFIG = {
       categoryBackground: 'res/beach/beach.png',
 
       items: [
-        { id: 'ball',     name: 'כדור',       image: 'res/beach/ball.png'     },
-        { id: 'seashell', name: 'צדף',        image: 'res/beach/seashell.png' },
-        { id: 'lifering', name: 'גלגל ים', image: 'res/beach/lifering.png' },
-        { id: 'icecream', name: 'גלידה',      image: 'res/beach/icecream.png' },
+        { id: 'ball',     name: 'כַּדּוּר-كرة',       image: 'res/beach/ball.png'     },
+        { id: 'seashell', name: 'צֶדֶף-صدَفَة',        image: 'res/beach/seashell.png' },
+        { id: 'lifering', name: 'גַּלְגַּל יָם-عجلة البحر', image: 'res/beach/lifering.png' },
+        { id: 'icecream', name: 'גְּלִידָה-بوظة',      image: 'res/beach/icecream.png' },
       ],
     },
 
     /* ── 3: Forest ────────────────────────────────────────────── */
     {
       id: 'forest',
-      name: 'יער',
+      name: 'יַעַר-غابة',
 
       menuImage: 'res/forest/forest.png',
       menuGradient: 'linear-gradient(145deg, #134e5e 0%, #71b280 60%, #27ae60 100%)',
@@ -531,10 +531,10 @@ const CONFIG = {
       categoryBackground: 'res/forest/forest.png',
 
       items: [
-        { id: 'mushroom', name: 'פטרייה', image: 'res/forest/mushroom.png' },
-        { id: 'bear',     name: 'דוב',    image: 'res/forest/bear.png'     },
-        { id: 'tent',     name: 'אוהל',   image: 'res/forest/tent.png'     },
-        { id: 'bonfire',  name: 'מדורה',  image: 'res/forest/bonfire.png'  },
+        { id: 'mushroom', name: 'פִּטְרִיָּה-فطر', image: 'res/forest/mushroom.png' },
+        { id: 'bear',     name: 'דֹּב-دُبٌّ',    image: 'res/forest/bear.png'     },
+        { id: 'tent',     name: 'אֹהֶל-خيمة',   image: 'res/forest/tent.png'     },
+        { id: 'bonfire',  name: 'מְדוּרָה-نار',  image: 'res/forest/bonfire.png'  },
       ],
     },
   ],
