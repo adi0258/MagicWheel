@@ -164,63 +164,42 @@
       pointer-events: none;
     }
 
-    /* ─── Category: Item Card ───────────────────────────────────── */
-    .item-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* ─── Category: Lane Dimmer (spotlight effect) ──────────────── */
+    .lane-dimmer {
       position: absolute;
-      bottom: 100px;
-      width: 88%;
-      transition: transform 0.3s ease;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.52);
+      transition: background 0.3s ease;
+      border-radius: 12px;
+      pointer-events: none;
     }
 
-    .lane.active .item-wrap {
-      transform: translateY(-8px) scale(1.08);
+    .lane.active .lane-dimmer {
+      background: rgba(0, 0, 0, 0);
     }
 
-    .item-emoji-box {
-      border-radius: 28px;
-      width: clamp(90px, 13vw, 170px);
-      height: clamp(90px, 13vw, 170px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(2.8rem, 6vw, 5.5rem);
-      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
-      transition: filter 0.3s ease;
-    }
-
-    .lane.active .item-emoji-box {
-      filter:
-        drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45))
-        drop-shadow(0 0 18px rgba(255, 220, 40, 0.55));
-    }
-
-    .item-img {
-      width: 88%;
-      max-height: 46vh;
-      object-fit: contain;
-      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
-      transition: filter 0.3s ease, transform 0.3s ease;
-    }
-
-    .lane.active .item-img {
-      filter:
-        drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5))
-        drop-shadow(0 0 20px rgba(255, 220, 40, 0.5));
-    }
-
-    .item-label {
-      margin-top: 10px;
-      font-size: clamp(1rem, 2.2vw, 1.7rem);
+    /* ─── Category: Word Label on active lane ───────────────────── */
+    .lane-word {
+      position: absolute;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(1.4rem, 2.8vw, 2.4rem);
       color: #fff;
       font-weight: bold;
-      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.95);
-      background: rgba(0, 0, 0, 0.45);
-      padding: 5px 16px;
+      text-shadow: 1px 1px 8px rgba(0, 0, 0, 1), 0 0 16px rgba(0,0,0,0.8);
+      background: rgba(0, 0, 0, 0.55);
+      padding: 7px 22px;
       border-radius: 30px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s ease;
       backdrop-filter: blur(4px);
+      z-index: 2;
+    }
+
+    .lane.active .lane-word {
+      opacity: 1;
     }
 
     /* ─── Back Arrow hint (State 2, lane 0 only) ────────────────── */
@@ -265,8 +244,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(10px);
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.35s ease;
@@ -298,8 +277,8 @@
     }
 
     #word-display {
-      margin-top: 24px;
-      font-size: clamp(4rem, 14vw, 11rem);
+      margin-top: 0;
+      font-size: clamp(5rem, 18vw, 14rem);
       color: #FFE220;
       text-shadow:
         3px 3px 0 #b87900,
@@ -383,8 +362,6 @@
 
   <!-- Interaction overlay (State 3) -->
   <div id="interaction-overlay">
-    <div id="interaction-item-preview"></div>
-    <img id="interaction-item-img" src="" alt="" style="display:none;">
     <div id="word-display"></div>
   </div>
 
@@ -425,14 +402,13 @@ const CONFIG = {
       menuGradient: 'linear-gradient(145deg, #f7971e 0%, #ffd200 50%, #d0021b 100%)',
       menuEmoji: '🏠',
 
-      categoryBackground: '',                 // e.g. 'assets/worlds/home_interior.jpg'
-      categoryGradient: 'linear-gradient(180deg, #fdebd0 0%, #f5cba7 60%, #e59866 100%)',
+      categoryBackground: 'res/home.png',
 
       items: [
-        { id: 'bed',      name: 'מיטה',    image: '', emoji: '🛏️', color: '#e8b4b8' },
-        { id: 'computer', name: 'מחשב',    image: '', emoji: '💻', color: '#a8d8ea' },
-        { id: 'chair',    name: 'כיסא',    image: '', emoji: '🪑', color: '#b8e6b8' },
-        { id: 'table',    name: 'שולחן',   image: '', emoji: '🪞', color: '#f0d9a8' },
+        { id: 'bed',      name: 'מיטה'  },
+        { id: 'computer', name: 'מחשב'  },
+        { id: 'sofa',     name: 'ספה'   },
+        { id: 'shelf',    name: 'מדף'   },
       ],
     },
 
@@ -445,14 +421,13 @@ const CONFIG = {
       menuGradient: 'linear-gradient(145deg, #4a90e2 0%, #74b9ff 50%, #2d3436 100%)',
       menuEmoji: '🏙️',
 
-      categoryBackground: '',
-      categoryGradient: 'linear-gradient(180deg, #74b9ff 0%, #a29bfe 40%, #636e72 100%)',
+      categoryBackground: 'res/street.png',
 
       items: [
-        { id: 'car',           name: 'מכונית',   image: '', emoji: '🚗', color: '#ff7675' },
-        { id: 'traffic_light', name: 'רמזור',    image: '', emoji: '🚦', color: '#fdcb6e' },
-        { id: 'bus',           name: 'אוטובוס',  image: '', emoji: '🚌', color: '#55efc4' },
-        { id: 'bicycle',       name: 'אופניים',  image: '', emoji: '🚲', color: '#74b9ff' },
+        { id: 'tree',          name: 'עץ'    },
+        { id: 'bench',         name: 'ספסל'  },
+        { id: 'traffic_light', name: 'רמזור' },
+        { id: 'shop',          name: 'חנות'  },
       ],
     },
 
@@ -465,14 +440,13 @@ const CONFIG = {
       menuGradient: 'linear-gradient(145deg, #00cec9 0%, #74b9ff 40%, #fdcb6e 100%)',
       menuEmoji: '🏖️',
 
-      categoryBackground: '',
-      categoryGradient: 'linear-gradient(180deg, #0099cc 0%, #00b4d8 45%, #f7db68 100%)',
+      categoryBackground: 'res/beach.png',
 
       items: [
-        { id: 'fish',  name: 'דג',   image: '', emoji: '🐟', color: '#74d7d7' },
-        { id: 'shell', name: 'צדף',  image: '', emoji: '🐚', color: '#ffd166' },
-        { id: 'sun',   name: 'שמש',  image: '', emoji: '☀️', color: '#ffbe0b' },
-        { id: 'boat',  name: 'סירה', image: '', emoji: '⛵', color: '#dfe6e9' },
+        { id: 'ball',     name: 'כדור'         },
+        { id: 'shell',    name: 'צדף'          },
+        { id: 'lifebuoy', name: 'טבעת הצלה'   },
+        { id: 'icecream', name: 'גלידה'        },
       ],
     },
 
@@ -485,14 +459,13 @@ const CONFIG = {
       menuGradient: 'linear-gradient(145deg, #134e5e 0%, #71b280 60%, #27ae60 100%)',
       menuEmoji: '🌲',
 
-      categoryBackground: '',
-      categoryGradient: 'linear-gradient(180deg, #1e3c00 0%, #1a4731 40%, #52b788 100%)',
+      categoryBackground: 'res/forest.png',
 
       items: [
-        { id: 'tree',     name: 'עץ',      image: '', emoji: '🌳', color: '#52b788' },
-        { id: 'bird',     name: 'ציפור',   image: '', emoji: '🐦', color: '#b7e4c7' },
-        { id: 'flower',   name: 'פרח',     image: '', emoji: '🌸', color: '#ffc8dd' },
-        { id: 'mushroom', name: 'פטרייה',  image: '', emoji: '🍄', color: '#ffb347' },
+        { id: 'mushroom', name: 'פטרייה' },
+        { id: 'bear',     name: 'דוב'    },
+        { id: 'tent',     name: 'אוהל'   },
+        { id: 'campfire', name: 'מדורה'  },
       ],
     },
   ],
@@ -512,10 +485,7 @@ let inputLocked  = false;
 const bgEl              = document.getElementById('bg');
 const menuTitleEl       = document.getElementById('menu-title');
 const navHintEl         = document.getElementById('nav-hint');
-const overlayEl         = document.getElementById('interaction-overlay');
-const overlayPreviewEl  = document.getElementById('interaction-item-preview');
-const overlayImgEl      = document.getElementById('interaction-item-img');
-const wordDisplayEl     = document.getElementById('word-display');
+const overlayEl     = document.getElementById('interaction-overlay');
 
 const laneEls = [0, 1, 2, 3].map(i => document.getElementById(`lane-${i}`));
 const innerEls = [0, 1, 2, 3].map(i => document.getElementById(`lane-inner-${i}`));
@@ -525,23 +495,11 @@ const innerEls = [0, 1, 2, 3].map(i => document.getElementById(`lane-inner-${i}`
 ================================================================ */
 function applyBackground(world) {
   if (!world) {
-    /* Menu state */
-    if (CONFIG.menuBackground) {
-      bgEl.style.backgroundImage = `url('${CONFIG.menuBackground}')`;
-      bgEl.style.background = '';
-    } else {
-      bgEl.style.backgroundImage = 'none';
-      bgEl.style.background =
-        'linear-gradient(180deg, #0d0d1a 0%, #1a1a3e 40%, #0f3460 100%)';
-    }
+    bgEl.style.background = CONFIG.menuBackground
+      ? `url('${CONFIG.menuBackground}') center / cover no-repeat`
+      : 'linear-gradient(180deg, #0d0d1a 0%, #1a1a3e 40%, #0f3460 100%)';
   } else {
-    if (world.categoryBackground) {
-      bgEl.style.backgroundImage = `url('${world.categoryBackground}')`;
-      bgEl.style.background = '';
-    } else {
-      bgEl.style.backgroundImage = 'none';
-      bgEl.style.background = world.categoryGradient;
-    }
+    bgEl.style.background = `url('${world.categoryBackground}') center / cover no-repeat`;
   }
 }
 
@@ -586,24 +544,14 @@ function renderCategory(world) {
   applyBackground(world);
 
   world.items.forEach((item, i) => {
-    let mediaHTML;
-    if (item.image) {
-      mediaHTML = `<img class="item-img" src="${item.image}" alt="${item.name}">`;
-    } else {
-      mediaHTML = `<div class="item-emoji-box" style="background:${item.color};">${item.emoji}</div>`;
-    }
-
-    /* Show ← back hint only on lane 0 */
     const backHint = (i === 0)
       ? `<div class="back-hint" style="display:flex;">← <span>תפריט</span></div>`
       : '';
 
     innerEls[i].innerHTML = `
       ${backHint}
-      <div class="item-wrap">
-        ${mediaHTML}
-        <div class="item-label">${item.name}</div>
-      </div>
+      <div class="lane-dimmer"></div>
+      <div class="lane-word">${item.name}</div>
     `;
   });
 
@@ -614,27 +562,11 @@ function renderCategory(world) {
    RENDER: STATE 3 – INTERACTION
 ================================================================ */
 function showInteraction(item) {
-  function resetAnim(el) {
-    el.style.animation = 'none';
-    el.offsetHeight; /* force reflow so the animation restarts cleanly */
-    el.style.animation = '';
-  }
-
-  if (item.image) {
-    overlayImgEl.src = item.image;
-    overlayImgEl.alt = item.name;
-    overlayImgEl.style.display = 'block';
-    overlayPreviewEl.textContent = '';
-    resetAnim(overlayImgEl);
-  } else {
-    overlayPreviewEl.textContent = item.emoji;
-    overlayImgEl.style.display = 'none';
-    resetAnim(overlayPreviewEl);
-  }
-
-  wordDisplayEl.textContent = item.name;
-  resetAnim(wordDisplayEl);
-
+  const el = document.getElementById('word-display');
+  el.style.animation = 'none';
+  el.offsetHeight; /* force reflow so the animation restarts */
+  el.textContent = item.name;
+  el.style.animation = '';
   overlayEl.classList.add('visible');
 }
 
