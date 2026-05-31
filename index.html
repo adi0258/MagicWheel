@@ -50,6 +50,11 @@
       z-index: 1;
     }
 
+    /* In menu mode, push flex content above the dashboard */
+    #lanes.menu-mode .lane {
+      padding-bottom: 12vh;
+    }
+
     /* ─── Individual Lane ───────────────────────────────────────── */
     .lane {
       flex: 1;
@@ -91,23 +96,19 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 32vh;
-      overflow: hidden;
+      height: 11vh;
+      overflow: visible;
       z-index: 15;
       pointer-events: none;
-      /* mask applied to the div so coordinates align with the visible area,
-         fading the white windshield at top to transparent, car interior below */
-      background: transparent;
-      mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 22%, black 100%);
     }
 
     #dashboard img {
-      display: block;
-      width: 100%;
-      margin-top: -46%;  /* push the white top portion above the container */
-      position: relative;
-      z-index: 1;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 50%;
+      height: auto;
     }
 
     /* ─── Lane Content Wrapper ──────────────────────────────────── */
@@ -180,11 +181,11 @@
     /* ─── Category: Item Image ──────────────────────────────────── */
     .item-img {
       position: absolute;
-      bottom: 28vh;
+      bottom: 14vh;
       left: 50%;
       transform: translateX(-50%);
       width: 75%;
-      max-height: 38vh;
+      max-height: 35vh;
       object-fit: contain;
       filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
       transition: transform 0.3s ease, filter 0.3s ease;
@@ -216,7 +217,7 @@
     /* ─── Category: Word Label on active lane ───────────────────── */
     .lane-word {
       position: absolute;
-      bottom: 33vh;
+      bottom: 12vh;
       left: 50%;
       transform: translateX(-50%);
       font-size: clamp(1.4rem, 2.8vw, 2.4rem);
@@ -516,6 +517,7 @@ function refreshLaneHighlight() {
 ================================================================ */
 function renderMenu() {
   menuTitleEl.style.display = 'block';
+  document.getElementById('lanes').classList.add('menu-mode');
   applyBackground(null);
 
   CONFIG.worlds.forEach((world, i) => {
@@ -542,6 +544,7 @@ function renderMenu() {
 ================================================================ */
 function renderCategory(world) {
   menuTitleEl.style.display = 'none';
+  document.getElementById('lanes').classList.remove('menu-mode');
   applyBackground(world);
 
   world.items.forEach((item, i) => {
